@@ -3,12 +3,12 @@ function showToast(message, type = 'error', duration = 5000) {
     if (!toastContainer) return;
 
     const toast = document.createElement('div');
-    toast.className = `alert ${getToastClass(type)} shadow-lg max-w-sm w-full sm:max-w-sm mx-2 sm:mx-0`;
+    toast.className = `alert ${getToastClass(type)} shadow-lg max-w-sm w-full mx-2 sm:mx-0`;
 
     const icon = getToastIcon(type);
     toast.innerHTML = `
         ${icon}
-        <span>${message}</span>
+        <span class="flex-1">${message}</span>
         <div>
             <button class="btn btn-circle btn-ghost btn-sm" onclick="this.parentElement.parentElement.remove()">
                 <i class="fas fa-times"></i>
