@@ -1,5 +1,5 @@
 const API_BASE_URL = window.location.origin.includes('github.io') 
-    ? 'https://seu-servidor-api.com'
+    ? 'https://osuzenithapi.shardweb.app'
     : 'http://localhost:8080';
 
 async function apiRequest(endpoint, options = {}) {
