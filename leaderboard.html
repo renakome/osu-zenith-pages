@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Global PP Leaderboard - Zenith</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/banner.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.umd.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                    <li>
+                        <a>Profile</a>
+                        <ul class="p-2">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html" class="bg-primary text-primary-content rounded">Register</a></li>
+                </ul>
+            </div>
+            <a href="index.html" class="btn btn-ghost text-xl gap-2">
+                <img src="static/banner.png" class="w-8 h-8" alt="Logo">
+                Zenith
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 gap-2">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                <li>
+                    <details>
+                        <summary>Profile</summary>
+                        <ul class="p-2 bg-base-200 rounded-t-none z-50">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+            <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </div>
+    </div>
+
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-primary mb-2">
+                    Global PP Leaderboard
+                </h1>
+                <div class="divider w-24 mx-auto"></div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-base-200 p-4 rounded-xl shadow-md mx-2 md:mx-0">
+                <div class="join w-full md:w-auto">
+                    <input type="text" id="search-input" placeholder="Search player..." class="input input-bordered join-item w-full md:w-64" />
+                    <button class="btn btn-primary join-item"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 justify-center w-full sm:w-auto">
+                    <div class="join">
+                        <button class="btn btn-sm join-item btn-active btn-primary">PP</button>
+                        <button class="btn btn-sm join-item" onclick="window.location.href='?sortby=score'">Score</button>
+                    </div>
+
+                    <select class="select select-bordered select-sm" onchange="redirect(this.value)">
+                        <option value="">All countries</option>
+                        <option value="?country=BR">🇧🇷 Brazil</option>
+                        <option value="?country=US">🇺🇸 United States</option>
+                        <option value="?country=JP">🇯🇵 Japan</option>
+                        <option value="?country=KR">🇰🇷 South Korea</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto bg-base-100 rounded-xl shadow-xl border border-base-300 mx-2 md:mx-0">
+                <table class="table table-zebra w-full" id="leaderboard-table">
+                    <thead class="bg-base-300">
+                        <tr>
+                            <th class="text-center w-20">Rank</th>
+                            <th>Player</th>
+                            <th class="text-right">PP</th>
+                            <th class="text-center">Plays</th>
+                            <th class="text-center">ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Leaderboard data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-center mt-8 mx-2 md:mx-0">
+                <div class="join">
+                    <button id="prev-page" class="join-item btn btn-outline btn-sm" disabled>«</button>
+                    <button class="join-item btn btn-sm no-animation">Page <span id="current-page-num">1</span></button>
+                    <button id="next-page" class="join-item btn btn-outline btn-sm">»</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-10 bg-base-300 text-base-content">
+        <aside>
+            <img src="static/banner.png" class="w-12 h-12 mb-2" alt="Logo">
+            <p class="font-bold">Zenith osu!droid Server</p>
+            <p>Copyright © <span id="current-year"></span> - All right reserved</p>
+        </aside>
+        <nav>
+            <div class="grid grid-flow-col gap-4">
+                <a href="https://t.me/+37SMfbhyQ5tkMWUx" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+            </div>
+        </nav>
+    </footer>
+
+    <div id="toast-container" class="toast toast-top toast-end z-50 px-4"></div>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        function redirect(url) {
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const data = await apiRequest('/api/leaderboard');
+                const tbody = document.getElementById('leaderboard-body');
+
+                if (data.players && data.players.length > 0) {
+                    tbody.innerHTML = data.players.map((player, index) => `
+                        <tr class="hover">
+                            <td class="text-center font-bold">
+                                <span class="badge badge-primary">#${index + 1}</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                            <span>${player.username[0].toUpperCase()}</span>
+                                        </div>
+                                    </div>
+                                    <a href="profile.html?id=${player.id}" class="link link-hover font-semibold text-primary">${player.username}</a>
+                                </div>
+                            </td>
+                            <td class="text-right font-mono">
+                                ${player.pp ? player.pp.toFixed(2) : '0.00'}pp
+                            </td>
+                            <td class="text-center">${player.plays || 0}</td>
+                            <td class="text-center opacity-50 text-xs">${player.id || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-16">
+                                <div class="text-8xl mb-6 opacity-20">🏆</div>
+                                <h3 class="text-2xl font-bold mb-2">No players found</h3>
+                                <p class="text-lg opacity-70">Leaderboard will be populated as players join.</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboard-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-16">
+                            <div class="text-4xl mb-4">⚠️</div>
+                            <p class="opacity-70">Unable to load leaderboard data.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.querySelector('#leaderboard-body');
+            let allRows = Array.from(tableBody.querySelectorAll('tr'));
+            const searchInput = document.getElementById('search-input');
+            const perPage = 15;
+            let currentPage = 1;
+            let filteredRows = allRows.slice();
+
+            function displayPage(page) {
+                const start = (page - 1) * perPage;
+                const end = start + perPage;
+                allRows.forEach(row => (row.style.display = 'none'));
+                filteredRows.slice(start, end).forEach(row => row.style.display = '');
+                document.getElementById('prev-page').disabled = page === 1;
+                document.getElementById('next-page').disabled = end >= filteredRows.length;
+                document.getElementById('current-page-num').textContent = page;
+            }
+
+            function updateTable() {
+                tableBody.innerHTML = '';
+                filteredRows.forEach(row => tableBody.appendChild(row));
+                displayPage(currentPage);
+            }
+
+            function filterTable() {
+                const query = searchInput.value.toLowerCase().trim();
+                filteredRows = allRows.filter(row => {
+                    return row.cells[1].textContent.toLowerCase().includes(query);
+                });
+                currentPage = 1;
+                updateTable();
+            }
+
+            searchInput.addEventListener('input', filterTable);
+
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayPage(currentPage);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                const maxPage = Math.ceil(filteredRows.length / perPage);
+                if (currentPage < maxPage) {
+                    currentPage++;
+                    displayPage(currentPage);
+                }
+            });
+
+            loadLeaderboard();
+        });
+    </script>
+</body>
+</html>

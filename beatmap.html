@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Beatmap - Zenith</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/banner.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.umd.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                    <li>
+                        <a>Profile</a>
+                        <ul class="p-2">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html" class="bg-primary text-primary-content rounded">Register</a></li>
+                </ul>
+            </div>
+            <a href="index.html" class="btn btn-ghost text-xl gap-2">
+                <img src="static/banner.png" class="w-8 h-8" alt="Logo">
+                Zenith
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 gap-2">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                <li>
+                    <details>
+                        <summary>Profile</summary>
+                        <ul class="p-2 bg-base-200 rounded-t-none z-50">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+            <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </div>
+    </div>
+
+    <main class="flex-grow" id="beatmap-content">
+        <div class="text-center py-16">
+            <div class="text-4xl mb-4">🔄</div>
+            <p class="text-lg opacity-70">Loading beatmap...</p>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-10 bg-base-300 text-base-content">
+        <aside>
+            <img src="static/banner.png" class="w-12 h-12 mb-2" alt="Logo">
+            <p class="font-bold">Zenith osu!droid Server</p>
+            <p>Copyright © <span id="current-year"></span> - All right reserved</p>
+        </aside>
+        <nav>
+            <div class="grid grid-flow-col gap-4">
+                <a href="https://t.me/+37SMfbhyQ5tkMWUx" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+            </div>
+        </nav>
+    </footer>
+
+    <div id="toast-container" class="toast toast-top toast-end z-50 px-4"></div>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        function formatUnixTimestamp(ts) {
+            if (!ts) return '-';
+            const date = new Date(ts * 1000);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor(diff / (1000 * 60));
+
+            if (minutes < 1) {
+                return 'Just now';
+            } else if (minutes < 60) {
+                return `${minutes}m ago`;
+            } else if (hours < 24) {
+                return `${hours}h ago`;
+            } else if (days === 1) {
+                return 'Yesterday';
+            } else if (days < 7) {
+                return `${days} days ago`;
+            } else if (days < 30) {
+                const weeks = Math.floor(days / 7);
+                return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        async function loadBeatmap() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const beatmapId = urlParams.get('id');
+
+            if (!beatmapId) {
+                document.getElementById('beatmap-content').innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold mb-2">No Beatmap ID</h3>
+                        <p class="text-lg opacity-70">Please provide a beatmap ID in the URL.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const data = await apiRequest(`/api/beatmaps/${beatmapId}`);
+
+                document.getElementById('beatmap-content').innerHTML = `
+                    <div class="bg-base-200 border-b border-base-300">
+                        <div class="container mx-auto px-4 py-6">
+                            <div class="flex flex-col lg:flex-row gap-6">
+                                <div class="lg:w-48">
+                                    <div class="bg-base-300 rounded-lg p-4 text-center">
+                                        <div class="text-4xl mb-2">🎵</div>
+                                        <div class="text-sm opacity-70">Preview</div>
+                                        <div class="text-xs opacity-50 mt-1">Coming Soon</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="badge badge-primary badge-lg">${data.stars?.toFixed(2) || '0.00'}★</div>
+                                        ${data.status === 2 ? '<span class="badge badge-success">Ranked</span>' :
+                                          data.status === 3 ? '<span class="badge badge-info">Approved</span>' :
+                                          data.status === 4 ? '<span class="badge badge-warning">Qualified</span>' :
+                                          '<span class="badge badge-neutral">Unranked</span>'}
+                                        <span class="badge badge-outline">${data.mode?.toUpperCase() || 'OSU'}</span>
+                                    </div>
+
+                                    <h1 class="text-3xl font-bold text-primary mb-1">
+                                        ${data.artist} - ${data.title}
+                                    </h1>
+                                    <p class="text-xl opacity-80 mb-3">
+                                        [${data.version}]
+                                    </p>
+                                    <p class="text-lg mb-4">
+                                        <span class="opacity-70">mapped by</span>
+                                        <a href="profile.html?id=${data.creator_id || 0}" class="link link-primary font-semibold">
+                                            ${data.creator}
+                                        </a>
+                                    </p>
+
+                                    <div class="flex flex-wrap gap-3 mb-4">
+                                        <button class="btn btn-primary">
+                                            <i class="fas fa-play mr-2"></i>Play
+                                        </button>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline" tabindex="0">
+                                                <i class="fas fa-download mr-2"></i>Download
+                                                <i class="fas fa-caret-down ml-2"></i>
+                                            </button>
+                                            <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                                                <li><a href="#">No Video</a></li>
+                                                <li><a href="#">With Video</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold text-primary">${data.stars?.toFixed(2) || '0.00'}</div>
+                                            <div class="text-sm opacity-70">Star Rating</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold">${Math.floor((data.length || 0) / 60)}:${String((data.length || 0) % 60).padStart(2, '0')}</div>
+                                            <div class="text-sm opacity-70">Length</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold">${data.bpm || 0}</div>
+                                            <div class="text-sm opacity-70">BPM</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold">${(data.max_combo || 0).toLocaleString()}</div>
+                                            <div class="text-sm opacity-70">Max Combo</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-4 gap-4 mt-4">
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-lg font-semibold text-red-500">${data.cs?.toFixed(1) || '0.0'}</div>
+                                            <div class="text-xs opacity-70">CS</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-lg font-semibold text-green-500">${data.ar?.toFixed(1) || '0.0'}</div>
+                                            <div class="text-xs opacity-70">AR</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-lg font-semibold text-blue-500">${data.od?.toFixed(1) || '0.0'}</div>
+                                            <div class="text-xs opacity-70">OD</div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-3 text-center">
+                                            <div class="text-lg font-semibold text-purple-500">${data.hp?.toFixed(1) || '0.0'}</div>
+                                            <div class="text-xs opacity-70">HP</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="lg:w-64">
+                                    <div class="space-y-3">
+                                        <div class="bg-base-100 rounded-lg p-4">
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-secondary">${(data.playcount || 0).toLocaleString()}</div>
+                                                <div class="text-sm opacity-70">Playcount</div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-4">
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-accent">${(data.passcount || 0).toLocaleString()}</div>
+                                                <div class="text-sm opacity-70">Passcount</div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-base-100 rounded-lg p-4">
+                                            <div class="text-sm">
+                                                <div class="mb-2">
+                                                    <span class="opacity-70">Beatmap ID:</span>
+                                                    <span class="font-mono">${data.id}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="opacity-70">MD5:</span>
+                                                    <span class="font-mono text-xs">${data.md5 ? data.md5.substring(0, 16) + '...' : 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container mx-auto px-4 py-8">
+                        <div class="bg-base-100 rounded-lg shadow-lg overflow-hidden">
+                            <div class="bg-base-200 px-6 py-4 border-b border-base-300">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-2xl font-bold flex items-center gap-3">
+                                        <i class="fas fa-trophy text-yellow-500"></i>
+                                        Leaderboard
+                                    </h2>
+                                    <div class="badge badge-primary">${data.total_scores || 0} scores</div>
+                                </div>
+                            </div>
+
+                            ${data.total_scores > 0 ? `
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead class="bg-base-200">
+                                        <tr>
+                                            <th class="w-16 text-center">#</th>
+                                            <th>Player</th>
+                                            <th class="text-center">Score</th>
+                                            <th class="text-center">Accuracy</th>
+                                            <th class="text-center">Combo</th>
+                                            <th class="text-center">PP</th>
+                                            <th class="text-center">Mods</th>
+                                            <th class="text-center">Played</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.scores.map((score, index) => `
+                                            <tr class="hover border-b border-base-200">
+                                                <td class="text-center">
+                                                    ${index === 0 ? '<div class="flex justify-center"><div class="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">1</div></div>' :
+                                                      index === 1 ? '<div class="flex justify-center"><div class="bg-gray-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">2</div></div>' :
+                                                      index === 2 ? '<div class="flex justify-center"><div class="bg-amber-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">3</div></div>' :
+                                                      `<span class="font-semibold opacity-70">#${index + 1}</span>`}
+                                                </td>
+
+                                                <td>
+                                                    <div class="flex items-center gap-3">
+                                                        <img src="https://flagsapi.com/${score.country || 'XX'}/flat/32.png"
+                                                             alt="${score.country}"
+                                                             class="w-6 h-4 rounded shadow"
+                                                             onerror="this.style.display='none'">
+                                                        <div>
+                                                            <a href="profile.html?id=${score.user_id || 0}"
+                                                               class="font-semibold link link-primary hover:link-hover">
+                                                                ${score.username}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td class="text-center font-mono font-semibold">
+                                                    ${score.score}
+                                                </td>
+
+                                                <td class="text-center">
+                                                    <span class="font-semibold ${score.accuracy > 97 ? 'text-success' :
+                                                                              score.accuracy > 95 ? 'text-warning' :
+                                                                              score.accuracy > 90 ? 'text-info' : 'text-error'}">
+                                                        ${score.accuracy}
+                                                    </span>
+                                                </td>
+
+                                                <td class="text-center">
+                                                    <span class="font-semibold">${score.max_combo?.toLocaleString() || 0}x</span>
+                                                </td>
+
+                                                <td class="text-center">
+                                                    ${score.pp ? `<span class="font-semibold text-purple-600">${score.pp.toFixed(1)}pp</span>` : '<span class="opacity-50">-</span>'}
+                                                </td>
+
+                                                <td class="text-center">
+                                                    ${score.mods ? `<span class="badge badge-outline badge-sm font-mono">${score.mods}</span>` : '<span class="opacity-50">-</span>'}
+                                                </td>
+
+                                                <td class="text-center text-sm opacity-70" data-timestamp="${score.date}">
+                                                    ${formatUnixTimestamp(score.date)}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            ` : `
+                            <div class="text-center py-16">
+                                <div class="text-8xl mb-6 opacity-20">🏆</div>
+                                <h3 class="text-2xl font-bold mb-2">No scores yet!</h3>
+                                <p class="text-lg opacity-70 mb-4">Be the first to set a score on this beatmap.</p>
+                                <button class="btn btn-primary btn-lg">
+                                    <i class="fas fa-play mr-2"></i>Play Beatmap
+                                </button>
+                            </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="container mx-auto px-4 py-8">
+                        <div class="bg-base-100 rounded-lg shadow-lg p-6">
+                            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle"></i>
+                                Beatmap Information
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold mb-2">Beatmap Details</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Source:</span>
+                                            <span>${data.source || 'Unknown'}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Tags:</span>
+                                            <span>${data.tags || 'None'}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Last Updated:</span>
+                                            <span data-timestamp="${data.last_update || 0}">${new Date((data.last_update || 0) * 1000).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-2">Beatmap Set</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Set ID:</span>
+                                            <span>${data.set_id || 'N/A'}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Status:</span>
+                                            ${data.status === 2 ? '<span class="text-green-600">Ranked</span>' :
+                                              data.status === 3 ? '<span class="text-blue-600">Approved</span>' :
+                                              data.status === 4 ? '<span class="text-yellow-600">Qualified</span>' :
+                                              '<span class="text-gray-600">Unranked</span>'}
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Mode:</span>
+                                            <span>${data.mode?.toUpperCase() || 'OSU'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading beatmap:', error);
+                document.getElementById('beatmap-content').innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold mb-2">Error Loading Beatmap</h3>
+                        <p class="text-lg opacity-70">Unable to load beatmap data. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBeatmap);
+    </script>
+</body>
+</html>

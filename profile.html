@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Player Profile - Zenith</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/banner.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.umd.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                    <li>
+                        <a>Profile</a>
+                        <ul class="p-2">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html" class="bg-primary text-primary-content rounded">Register</a></li>
+                </ul>
+            </div>
+            <a href="index.html" class="btn btn-ghost text-xl gap-2">
+                <img src="static/banner.png" class="w-8 h-8" alt="Logo">
+                Zenith
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 gap-2">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                <li>
+                    <details>
+                        <summary>Profile</summary>
+                        <ul class="p-2 bg-base-200 rounded-t-none z-50">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+            <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </div>
+    </div>
+
+    <main class="flex-grow">
+        <div id="profile-content" class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <div class="text-4xl mb-4">🔄</div>
+                <p class="text-lg opacity-70">Loading profile...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-10 bg-base-300 text-base-content">
+        <aside>
+            <img src="static/banner.png" class="w-12 h-12 mb-2" alt="Logo">
+            <p class="font-bold">Zenith osu!droid Server</p>
+            <p>Copyright © <span id="current-year"></span> - All right reserved</p>
+        </aside>
+        <nav>
+            <div class="grid grid-flow-col gap-4">
+                <a href="https://t.me/+37SMfbhyQ5tkMWUx" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+            </div>
+        </nav>
+    </footer>
+
+    <div id="toast-container" class="toast toast-top toast-end z-50 px-4"></div>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        function formatUnixTimestamp(ts) {
+            if (!ts) return '-';
+            const date = new Date(ts * 1000);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor(diff / (1000 * 60));
+
+            if (minutes < 1) {
+                return 'Just now';
+            } else if (minutes < 60) {
+                return `${minutes}m ago`;
+            } else if (hours < 24) {
+                return `${hours}h ago`;
+            } else if (days === 1) {
+                return 'Yesterday';
+            } else if (days < 7) {
+                return `${days} days ago`;
+            } else if (days < 30) {
+                const weeks = Math.floor(days / 7);
+                return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        async function loadProfile() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+
+            if (!userId) {
+                document.getElementById('profile-content').innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold mb-2">No User ID</h3>
+                        <p class="text-lg opacity-70">Please provide a user ID in the URL.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const data = await apiRequest(`/api/users/${userId}`);
+
+                document.getElementById('profile-content').innerHTML = `
+                    <div class="card lg:card-side bg-base-200 shadow-xl mb-8 overflow-hidden border border-base-300 mx-2 md:mx-0">
+                        <figure class="p-8 bg-base-300">
+                            <div class="avatar">
+                                <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-300">
+                                    <img src="${data.avatar_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0zMiA0OEgzMHYxNmgzMnYxNkg2NFY2NEgzMnoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTQ4IDY0SDMyVjQ4aDE2djE2eiIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4='}" alt="Avatar" class="w-full h-full object-cover" />
+                                </div>
+                            </div>
+                        </figure>
+                        <div class="card-body">
+                            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                                <h2 class="card-title text-3xl font-bold text-primary">${data.username}</h2>
+                                <img class="w-8 h-auto rounded shadow-sm object-contain"
+                                     src="https://flagsapi.com/${data.country || 'XX'}/flat/64.png"
+                                     alt="Flag of ${data.country || 'Unknown'}"
+                                     onerror="this.style.display='none'">
+                            </div>
+
+                            <div class="stats stats-vertical lg:stats-horizontal bg-base-100 shadow mt-4">
+                                <div class="stat">
+                                    <div class="stat-title">Global Rank</div>
+                                    <div class="stat-value text-secondary text-2xl">#${data.stats.pp_rank || 'N/A'}</div>
+                                    <div class="stat-desc">Score: #${data.stats.score_rank || 'N/A'}</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title">Country Rank</div>
+                                    <div class="stat-value text-accent text-2xl">#${data.stats.country_pp_rank || 'N/A'}</div>
+                                    <div class="stat-desc">Score: #${data.stats.country_score_rank || 'N/A'}</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title">Performance</div>
+                                    <div class="stat-value text-primary text-2xl">${data.stats.pp || 0}pp</div>
+                                    <div class="stat-desc">Acc: ${data.stats.acc || 0}%</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title">Level</div>
+                                    <div class="stat-value text-2xl">${Math.floor(data.stats.level || 1)}</div>
+                                    <div class="stat-desc">Plays: ${data.stats.plays || 0}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${data.achievements && data.achievements.length > 0 ? `
+                    <div class="card bg-base-200 shadow-xl mb-8 border border-base-300 mx-2 md:mx-0">
+                        <div class="card-body">
+                            <h3 class="card-title text-2xl text-primary mb-4">
+                                🏆 Achievements
+                                <span class="badge badge-primary badge-lg ml-2">${data.earned_achievements}/${data.total_achievements}</span>
+                            </h3>
+
+                            ${data.earned_achievements > 0 ? `
+                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                                ${data.earned_achievements.slice(0, 12).map(achievement => `
+                                    <div class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
+                                         onclick="showAchievementModal('${achievement.id}', '${achievement.name}', '${achievement.description}', '${achievement.icon}', '${achievement.category}', '${achievement.earned_at}')">
+                                        <figure class="px-4 pt-4">
+                                            <img src="${achievement.icon}" alt="${achievement.name}"
+                                                 class="rounded-xl w-16 h-16 object-cover group-hover:scale-110 transition-transform" />
+                                        </figure>
+                                        <div class="card-body p-4">
+                                            <h4 class="card-title text-sm text-center text-base-content group-hover:text-primary transition-colors">
+                                                ${achievement.name}
+                                            </h4>
+                                            <p class="text-xs text-center opacity-70">${achievement.category}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+
+                            ${data.unearned_achievements && data.unearned_achievements.length > 0 ? `
+                            <div class="divider">In Progress</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${data.unearned_achievements.slice(0, 6).map(achievement => `
+                                    <div class="card bg-base-100 shadow-md border border-base-300">
+                                        <div class="card-body p-4">
+                                            <div class="flex items-center gap-3">
+                                                <img src="${achievement.icon}" alt="${achievement.name}"
+                                                     class="rounded-lg w-12 h-12 object-cover opacity-50" />
+                                                <div class="flex-1">
+                                                    <h4 class="font-semibold text-base-content">${achievement.name}</h4>
+                                                    <p class="text-sm opacity-70">${achievement.description}</p>
+                                                    <div class="w-full bg-base-200 rounded-full h-2 mt-2">
+                                                        <div class="bg-primary h-2 rounded-full transition-all duration-300"
+                                                             style="width: ${achievement.progress}%"></div>
+                                                    </div>
+                                                    <p class="text-xs text-right mt-1 opacity-60">${achievement.progress}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div role="tablist" class="tabs tabs-lifted tabs-lg">
+                        <input type="radio" name="score_tabs" role="tab" class="tab" aria-label="Top Scores" checked />
+                        <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-4 md:p-6 overflow-x-auto">
+                            ${data.top_scores && data.top_scores.length > 0 ? `
+                            <table class="table table-zebra w-full min-w-[600px]">
+                                <thead>
+                                    <tr>
+                                        <th>Map</th>
+                                        <th class="text-center">Mods</th>
+                                        <th class="text-center">PP</th>
+                                        <th class="text-center">Acc</th>
+                                        <th class="text-center">Combo</th>
+                                        <th class="text-center">Miss</th>
+                                        <th class="text-right">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.top_scores.map(score => `
+                                        <tr class="hover">
+                                            <td class="max-w-xs truncate"><a href="beatmap.html?id=${score.bmap.id}" class="link link-hover text-primary font-medium">${score.bmap.full}</a></td>
+                                            <td class="text-center"><span class="badge badge-outline badge-sm">${score.mods.as_standard_mods}</span></td>
+                                            <td class="text-center font-bold">${score.pp.calc_pp.toFixed(2)}</td>
+                                            <td class="text-center">${score.acc.toFixed(2)}%</td>
+                                            <td class="text-center">${score.max_combo}x</td>
+                                            <td class="text-center text-error">${score.hmiss}</td>
+                                            <td class="text-right text-xs opacity-70">${formatUnixTimestamp(score.date)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            ` : `
+                            <div class="text-center py-16">
+                                <div class="text-4xl mb-4">🎵</div>
+                                <p class="opacity-70">No scores available</p>
+                            </div>
+                            `}
+                        </div>
+
+                        <input type="radio" name="score_tabs" role="tab" class="tab" aria-label="Recent Scores" />
+                        <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-4 md:p-6 overflow-x-auto">
+                            ${data.recent_scores && data.recent_scores.length > 0 ? `
+                            <table class="table table-zebra w-full min-w-[600px]">
+                                <thead>
+                                    <tr>
+                                        <th>Map</th>
+                                        <th class="text-center">Mods</th>
+                                        <th class="text-center">PP</th>
+                                        <th class="text-center">Acc</th>
+                                        <th class="text-center">Combo</th>
+                                        <th class="text-center">Miss</th>
+                                        <th class="text-right">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.recent_scores.map(score => `
+                                        <tr class="hover">
+                                            <td class="max-w-xs truncate"><a href="beatmap.html?id=${score.bmap.id}" class="link link-hover text-primary font-medium">${score.bmap.full}</a></td>
+                                            <td class="text-center"><span class="badge badge-outline badge-sm">${score.mods.as_standard_mods}</span></td>
+                                            <td class="text-center font-bold">${score.pp.calc_pp.toFixed(2)}</td>
+                                            <td class="text-center">${score.acc.toFixed(2)}%</td>
+                                            <td class="text-center">${score.max_combo}x</td>
+                                            <td class="text-center text-error">${score.hmiss}</td>
+                                            <td class="text-right text-xs opacity-70">${formatUnixTimestamp(score.date)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            ` : `
+                            <div class="text-center py-16">
+                                <div class="text-4xl mb-4">🎵</div>
+                                <p class="opacity-70">No recent scores available</p>
+                            </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('profile-content').innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="text-4xl mb-4">❌</div>
+                        <h3 class="text-2xl font-bold mb-2">Error Loading Profile</h3>
+                        <p class="text-lg opacity-70">Unable to load profile data. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+
+        function showAchievementModal(id, name, description, icon, category, earnedAt) {
+            const modal = document.createElement('div');
+            modal.className = 'modal modal-open';
+            modal.innerHTML = `
+                <div class="modal-box">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="${icon}" alt="${name}" class="w-16 h-16 rounded-xl" />
+                        <div>
+                            <h3 class="text-2xl font-bold text-primary">${name}</h3>
+                            <p class="text-sm opacity-70">${category}</p>
+                        </div>
+                    </div>
+                    <p class="py-4">${description}</p>
+                    <p class="text-sm opacity-60">
+                        <strong>Earned:</strong> ${new Date(earnedAt).toLocaleDateString()}
+                    </p>
+                    <div class="modal-action">
+                        <button class="btn" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+</html>
