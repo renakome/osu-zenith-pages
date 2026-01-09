@@ -149,6 +149,25 @@
             animatedBg.appendChild(dot);
         }
 
+        async function loadLatestRelease() {
+            try {
+                const response = await fetch('https://api.github.com/repos/renakome/odrx-client/releases/latest');
+                if (!response.ok) throw new Error('Failed to fetch release');
+                
+                const release = await response.json();
+                const downloadLink = document.getElementById('download-link');
+                
+                if (release.assets && release.assets.length > 0) {
+                    const apkAsset = release.assets.find(asset => asset.name.endsWith('.apk')) || release.assets[0];
+                    downloadLink.href = apkAsset.browser_download_url;
+                } else if (release.zipball_url) {
+                    downloadLink.href = release.zipball_url;
+                }
+            } catch (error) {
+                console.error('Error loading latest release:', error);
+            }
+        }
+
         async function loadHomeData() {
             try {
                 const data = await apiRequest('/api/stats');
@@ -157,10 +176,6 @@
                 document.getElementById('version').textContent = data.version || '1.0.0';
                 document.getElementById('server-title').textContent = data.title || 'Zenith';
                 document.getElementById('changelog').textContent = data.changelog || 'No changelog available';
-                if (data.download_link) {
-                    const downloadLink = document.getElementById('download-link');
-                    downloadLink.href = data.download_link;
-                }
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('players-count').textContent = '0';
@@ -171,6 +186,7 @@
         }
 
         loadHomeData();
+        loadLatestRelease();
     </script>
 </body>
 </html>
