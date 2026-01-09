@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Zenith</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/banner.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.umd.js"></script>
+    <script src="js/config.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                    <li>
+                        <a>Profile</a>
+                        <ul class="p-2">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html" class="bg-primary text-primary-content rounded">Register</a></li>
+                </ul>
+            </div>
+            <a href="index.html" class="btn btn-ghost text-xl gap-2">
+                <img src="static/banner.png" class="w-8 h-8" alt="Logo">
+                Zenith
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 gap-2">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                <li><a href="beatmaps.html"><i class="fas fa-music"></i> Beatmaps</a></li>
+                <li>
+                    <details>
+                        <summary>Profile</summary>
+                        <ul class="p-2 bg-base-200 rounded-t-none z-50">
+                            <li><a href="profile.html">My Profile</a></li>
+                            <li><a href="settings.html">Settings</a></li>
+                            <li><a href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+            <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </div>
+    </div>
+
+    <main class="flex-grow">
+        <div class="hero min-h-[80vh] bg-base-100 relative overflow-hidden">
+            <div class="absolute inset-0 pointer-events-none opacity-20" id="animated-bg"></div>
+
+            <div class="hero-content text-center z-10">
+                <div class="max-w-md">
+                    <div class="avatar mb-8">
+                        <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 shadow-2xl">
+                            <img src="static/banner.png" alt="Logo" />
+                        </div>
+                    </div>
+                    <h1 class="text-5xl font-bold text-primary mb-4" id="server-title">Zenith</h1>
+                    <p class="py-6 text-lg opacity-80">Experience the ultimate osu!droid private server with a dedicated community and competitive rankings.</p>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <div class="stat bg-base-200 rounded-box p-2">
+                            <div class="stat-title text-xs">Players</div>
+                            <div class="stat-value text-primary text-xl" id="players-count">-</div>
+                        </div>
+                        <div class="stat bg-base-200 rounded-box p-2">
+                            <div class="stat-title text-xs">Online</div>
+                            <div class="stat-value text-secondary text-xl" id="online-count">-</div>
+                        </div>
+                        <div class="stat bg-base-200 rounded-box p-2">
+                            <div class="stat-title text-xs">Version</div>
+                            <div class="stat-value text-accent text-xl" id="version">-</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="#" id="download-link" class="btn btn-primary btn-lg shadow-lg">
+                            <i class="fas fa-download"></i> Download APK
+                        </a>
+                        <a href="https://t.me/+37SMfbhyQ5tkMWUx" target="_blank" class="btn btn-outline btn-lg border-[#0088cc] text-[#0088cc] hover:bg-[#0088cc] hover:border-[#0088cc]">
+                            <i class="fab fa-telegram"></i> Telegram
+                        </a>
+                    </div>
+
+                    <div class="mt-10 collapse collapse-arrow bg-base-200">
+                        <input type="checkbox" /> 
+                        <div class="collapse-title text-sm font-medium">
+                            <i class="fas fa-list mr-2"></i> View Changelog
+                        </div>
+                        <div class="collapse-content text-left text-sm"> 
+                            <p id="changelog">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-10 bg-base-300 text-base-content">
+        <aside>
+            <img src="static/banner.png" class="w-12 h-12 mb-2" alt="Logo">
+            <p class="font-bold">Zenith osu!droid Server</p>
+            <p>Copyright © <span id="current-year"></span> - All right reserved</p>
+        </aside>
+        <nav>
+            <div class="grid grid-flow-col gap-4">
+                <a href="https://t.me/+37SMfbhyQ5tkMWUx" target="_blank" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="text-2xl hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+            </div>
+        </nav>
+    </footer>
+
+    <div id="toast-container" class="toast toast-top toast-end z-50 px-4"></div>
+
+    <script src="js/common.js"></script>
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        const animatedBg = document.getElementById('animated-bg');
+        for (let i = 0; i < 20; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'absolute rounded-full bg-primary animate-pulse';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.top = Math.random() * 100 + '%';
+            dot.style.width = (Math.random() * 10 + 5) + 'px';
+            dot.style.height = (Math.random() * 10 + 5) + 'px';
+            dot.style.animationDelay = Math.random() * 5 + 's';
+            dot.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            animatedBg.appendChild(dot);
+        }
+
+        async function loadHomeData() {
+            try {
+                const data = await apiRequest('/api/stats');
+                document.getElementById('players-count').textContent = data.players || '0';
+                document.getElementById('online-count').textContent = data.online || '0';
+                document.getElementById('version').textContent = data.version || '1.0.0';
+                document.getElementById('server-title').textContent = data.title || 'Zenith';
+                document.getElementById('changelog').textContent = data.changelog || 'No changelog available';
+                if (data.download_link) {
+                    const downloadLink = document.getElementById('download-link');
+                    downloadLink.href = data.download_link;
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('players-count').textContent = '0';
+                document.getElementById('online-count').textContent = '0';
+                document.getElementById('version').textContent = '1.0.0';
+                document.getElementById('changelog').textContent = 'Unable to load changelog';
+            }
+        }
+
+        loadHomeData();
+    </script>
+</body>
+</html>

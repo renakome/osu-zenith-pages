@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Zenith</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="static/banner.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.umd.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+        <div class="navbar-start">
+            <a href="index.html" class="btn btn-ghost text-xl gap-2">
+                <img src="static/banner.png" class="w-8 h-8" alt="Logo">
+                Zenith
+            </a>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+        </div>
+    </div>
+
+    <main class="flex-grow flex items-center justify-center min-h-[70vh] px-4">
+        <div class="card w-full max-w-md bg-base-200 shadow-2xl border border-base-300 mx-2 md:mx-0">
+            <div class="card-body">
+                <h2 class="card-title text-3xl font-bold text-center block mb-6 text-primary">Login</h2>
+
+                <div id="error-alert" class="alert alert-error mb-6 shadow-lg hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span id="error-message"></span>
+                </div>
+
+                <form id="login-form" novalidate class="space-y-4">
+                    <div class="form-control">
+                        <label class="label" for="username">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter username"
+                            class="input input-bordered focus:input-primary"
+                            required
+                            autocomplete="username"
+                        />
+                        <label class="label">
+                            <span class="label-text-alt opacity-60">3-20 characters, letters, numbers, and underscores</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label" for="password">
+                            <span class="label-text font-semibold">Password</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter password"
+                            class="input input-bordered focus:input-primary"
+                            required
+                            autocomplete="current-password"
+                        />
+                        <label class="label">
+                            <span class="label-text-alt opacity-60">At least 6 characters</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control mt-6">
+                        <button type="submit" class="btn btn-primary btn-block shadow-lg">Login</button>
+                    </div>
+                </form>
+
+                <div class="divider">OR</div>
+
+                <div class="text-center">
+                    <a href="password-recovery.html" class="link link-hover text-sm opacity-70">Forgot password?</a>
+                </div>
+                <div class="text-center mt-2">
+                    <span class="text-sm opacity-70">Don't have an account?</span>
+                    <a href="register.html" class="link link-primary font-semibold text-sm">Register now</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer-center p-10 bg-base-300 text-base-content">
+        <aside>
+            <img src="static/banner.png" class="w-12 h-12 mb-2" alt="Logo">
+            <p class="font-bold">Zenith osu!droid Server</p>
+            <p>Copyright © <span id="current-year"></span> - All right reserved</p>
+        </aside>
+    </footer>
+
+    <div id="toast-container" class="toast toast-top toast-end z-50 px-4"></div>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const errorAlert = document.getElementById('error-alert');
+            const errorMessage = document.getElementById('error-message');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/web_login.php`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.text();
+                    if (response.redirected || result.includes('success') || response.url.includes('profile')) {
+                        window.location.href = 'profile.html';
+                    } else {
+                        throw new Error('Login failed');
+                    }
+                } else {
+                    const error = await response.text();
+                    errorMessage.textContent = error || 'Invalid username or password';
+                    errorAlert.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Error logging in. Please check server connection.';
+                errorAlert.classList.remove('hidden');
+                showToast('Error logging in', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
+
