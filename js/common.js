@@ -88,13 +88,19 @@ style.textContent = `
         }
 
         .toast > * {
-            width: 100%;
+            width: 100% !important;
             margin: 0 0 10px 0;
+        }
+
+        .toast > * > span {
+            flex: 1;
+            word-break: break-word;
         }
 
         #toast-container {
             width: 100%;
             max-width: none;
+            padding: 0 10px;
         }
     }
 
